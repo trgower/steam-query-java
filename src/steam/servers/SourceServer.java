@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.net.SocketTimeoutException;
 
 public class SourceServer {
 
@@ -34,6 +35,8 @@ public class SourceServer {
     private String descTags;
     private Long gameid;
 
+    private boolean loaded = false;
+
 
     public SourceServer(InetSocketAddress host) {
         this.host = host;
@@ -49,11 +52,19 @@ public class SourceServer {
         byte[] q = SourceQuery.A2S_INFO();
         DatagramPacket packet = new DatagramPacket(q, q.length, host.getAddress(), host.getPort());
         DatagramSocket socket = new DatagramSocket();
+        socket.setSoTimeout(3000);
+        socket.setTrafficClass(0x04);
         socket.send(packet);
 
         byte[] buf = new byte[4096];
         DatagramPacket recv = new DatagramPacket(buf, buf.length);
-        socket.receive(recv);
+        try {
+            socket.receive(recv);
+        } catch (SocketTimeoutException e) {
+            System.out.println(host.getAddress().getHostAddress() + ":" + host.getPort() + " did not respond.");
+            return;
+        }
+
 
         if (recv.getLength() > 0 && recv.getData()[4] == SourceQuery.INFO_RESPONSE)
             parseInfo(recv);
@@ -97,6 +108,8 @@ public class SourceServer {
         if ((EDF & 0x01) > 0) {
             this.gameid = dis.readLong();
         }
+
+        loaded = true;
 
     }
 
