@@ -1,5 +1,5 @@
 import org.junit.jupiter.api.Test;
-import steam.QueryFilterBuilder;
+import steam.queries.QueryFilterBuilder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

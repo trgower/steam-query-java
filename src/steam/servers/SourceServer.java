@@ -1,4 +1,4 @@
-package steam;
+package steam.servers;
 
 import java.net.InetSocketAddress;
 

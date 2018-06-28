@@ -1,5 +1,8 @@
 import org.junit.jupiter.api.Test;
 import steam.*;
+import steam.queries.MasterQuery;
+import steam.queries.QueryFilterBuilder;
+import steam.servers.MasterServer;
 
 import java.net.InetSocketAddress;
 

@@ -1,4 +1,4 @@
-package steam;
+package steam.queries;
 
 public class QueryFilterBuilder {
 

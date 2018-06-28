@@ -1,4 +1,8 @@
-package steam;
+package steam.servers;
+
+import steam.RegionCode;
+import steam.SteamResponse;
+import steam.queries.MasterQuery;
 
 import java.io.*;
 import java.net.*;
