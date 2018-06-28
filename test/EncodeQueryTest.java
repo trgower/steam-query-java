@@ -10,8 +10,7 @@ public class EncodeQueryTest {
     @Test
     public void encoderTest() {
         MasterServer server = new MasterServer(MasterServers.SOURCE);
-        QueryFilterBuilder builder = new QueryFilterBuilder();
-        builder.napp(500);
+        QueryFilterBuilder builder = new QueryFilterBuilder().napp(500);
         MasterQuery query = new MasterQuery(RegionCode.EVERYWHERE, new InetSocketAddress("0.0.0.0", 0), builder.build());
         byte[] enc = server.encodeQuery(query);
         String res = bytesToHex(enc);
