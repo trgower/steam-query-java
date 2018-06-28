@@ -53,7 +53,7 @@ public class SourceServer {
         DatagramPacket packet = new DatagramPacket(q, q.length, host.getAddress(), host.getPort());
         DatagramSocket socket = new DatagramSocket();
         socket.setSoTimeout(3000);
-        socket.setTrafficClass(0x04);
+        socket.setTrafficClass(0x04); // set transmission class to reliable. We don't care about speed
         socket.send(packet);
 
         byte[] buf = new byte[4096];
