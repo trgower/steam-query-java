@@ -19,6 +19,7 @@ public class MasterServer {
         try {
             this.socket = new DatagramSocket();
             this.socket.setSoTimeout(15000);
+            this.socket.setTrafficClass(0x04);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -10,7 +10,7 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
 
-public class SourceServer {
+public class GameServer {
 
     private InetSocketAddress host;
     private byte protocol;
@@ -38,7 +38,7 @@ public class SourceServer {
     private boolean loaded = false;
 
 
-    public SourceServer(InetSocketAddress host) {
+    public GameServer(InetSocketAddress host) {
         this.host = host;
 
         try {
