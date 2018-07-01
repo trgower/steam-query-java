@@ -41,15 +41,20 @@ public class GameServer {
     private DatagramSocket socket;
     private ArrayList<Player> playerList;
     private byte[] challenge;
-    private boolean challengeRecieved;
     private HashMap<String, String> rules;
 
-    private boolean loaded = false;
+    private boolean infoRecieved;
+    private boolean playersRecieved;
+    private boolean rulesRecieved;
+    private boolean challengeRecieved;
 
     public GameServer() {
         this.playerList = new ArrayList<Player>();
         this.challenge = new byte[4];
         this.challengeRecieved = false;
+        this.infoRecieved = false;
+        this.playersRecieved = false;
+        this.rulesRecieved = false;
         this.rules = new HashMap<>();
     }
 
@@ -86,6 +91,7 @@ public class GameServer {
         DatagramPacket recv = recieve(SourceQuery.INFO_RESPONSE);
         if (recv != null) {
             parseInfo(recv);
+            infoRecieved = true;
         }
     }
 
@@ -126,8 +132,6 @@ public class GameServer {
             this.gameid = sis.readLong();
         }
 
-        loaded = true;
-
     }
 
     public boolean requestChallenge() throws IOException {
@@ -160,6 +164,7 @@ public class GameServer {
         DatagramPacket recv = recieve(SourceQuery.PLAYERS_RESPONSE);
         if (recv != null) {
             parsePlayers(recv);
+            playersRecieved = true;
         }
     }
 
@@ -186,6 +191,7 @@ public class GameServer {
         DatagramPacket recv = recieve(SourceQuery.RULES_RESPONSE);
         if (recv != null) {
             parseRules(recv);
+            rulesRecieved = true;
         }
     }
 
@@ -316,5 +322,21 @@ public class GameServer {
 
     public Long getGameid() {
         return gameid;
+    }
+
+    public boolean isInfoRecieved() {
+        return infoRecieved;
+    }
+
+    public boolean isPlayersRecieved() {
+        return playersRecieved;
+    }
+
+    public boolean isRulesRecieved() {
+        return rulesRecieved;
+    }
+
+    public boolean isChallengeRecieved() {
+        return challengeRecieved;
     }
 }
