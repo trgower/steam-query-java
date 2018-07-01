@@ -23,16 +23,4 @@ public class Tools {
         hexChars[1] = hexArray[v & 0x0F];
         return new String(hexChars);
     }
-
-    public static String readString(DataInputStream dis) throws IOException {
-        String res = "";
-        byte b = dis.readByte();
-        while (b != 0x00) {
-            res += (char) b;
-            b = dis.readByte();
-        }
-
-        return res;
-    }
-
 }

@@ -1,10 +1,10 @@
 package steam.servers;
 
+import steam.SteamInputStream;
 import steam.Tools;
 import steam.queries.SourceQuery;
 
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -44,6 +44,11 @@ public class GameServer {
 
     private boolean loaded = false;
 
+    public GameServer() {
+        this.playerList = new ArrayList<Player>();
+        this.challenge = new byte[4];
+        this.challengeRecieved = false;
+    }
 
     public GameServer(String ip, int port) {
         this(new InetSocketAddress(ip, port));
@@ -84,40 +89,40 @@ public class GameServer {
     }
 
     public void parseInfo(DatagramPacket packet) throws IOException {
-        DataInputStream dis = new DataInputStream(new ByteArrayInputStream(packet.getData()));
-        dis.skipBytes(5);
+        SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(packet.getData()));
+        sis.skipBytes(5);
 
-        this.protocol = dis.readByte();
-        this.name = Tools.readString(dis);
-        this.map = Tools.readString(dis);
-        this.folder = Tools.readString(dis);
-        this.game = Tools.readString(dis);
-        this.appid = dis.readUnsignedShort();
-        this.players = dis.read();
-        this.maxPlayers = dis.read();
-        this.bots = dis.read();
-        this.type = (char) dis.read();
-        this.env = (char) dis.read();
-        this.visibility = dis.readByte();
-        this.vac = dis.readByte();
-        this.version = Tools.readString(dis);
-        this.EDF = dis.readByte();
+        this.protocol = sis.readByte();
+        this.name = sis.readString();
+        this.map = sis.readString();
+        this.folder = sis.readString();
+        this.game = sis.readString();
+        this.appid = sis.readUnsignedShort();
+        this.players = sis.read();
+        this.maxPlayers = sis.read();
+        this.bots = sis.read();
+        this.type = (char) sis.read();
+        this.env = (char) sis.read();
+        this.visibility = sis.readByte();
+        this.vac = sis.readByte();
+        this.version = sis.readString();
+        this.EDF = sis.readByte();
 
         if ((EDF & 0x80) > 0) {
-            this.gamePort = Short.reverseBytes(dis.readShort());
+            this.gamePort = Short.reverseBytes(sis.readShort());
         }
         if ((EDF & 0x10) > 0) {
-            this.steamid = dis.readLong();
+            this.steamid = sis.readLong();
         }
         if ((EDF & 0x40) > 0) {
-            this.sourceTVPort = dis.readUnsignedShort();
-            this.sourceTVName = Tools.readString(dis);
+            this.sourceTVPort = sis.readUnsignedShort();
+            this.sourceTVName = sis.readString();
         }
         if ((EDF & 0x20) > 0) {
-            this.descTags = Tools.readString(dis);
+            this.descTags = sis.readString();
         }
         if ((EDF & 0x01) > 0) {
-            this.gameid = dis.readLong();
+            this.gameid = sis.readLong();
         }
 
         loaded = true;
@@ -133,12 +138,12 @@ public class GameServer {
 
         DatagramPacket recv = recieve(SourceQuery.CHALLENGE_RESPONSE);
         if (recv != null) {
-            DataInputStream dis = new DataInputStream(new ByteArrayInputStream(recv.getData()));
-            dis.skipBytes(5);
-            this.challenge[0] = dis.readByte();
-            this.challenge[1] = dis.readByte();
-            this.challenge[2] = dis.readByte();
-            this.challenge[3] = dis.readByte();
+            SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(recv.getData()));
+            sis.skipBytes(5);
+            this.challenge[0] = sis.readByte();
+            this.challenge[1] = sis.readByte();
+            this.challenge[2] = sis.readByte();
+            this.challenge[3] = sis.readByte();
 
             challengeRecieved = true;
         }
@@ -158,16 +163,16 @@ public class GameServer {
     }
 
     public void parsePlayers(DatagramPacket packet) throws IOException {
-        DataInputStream dis = new DataInputStream(new ByteArrayInputStream(packet.getData()));
-        dis.skipBytes(5);
+        SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(packet.getData()));
+        sis.skipBytes(5);
 
-        int num = dis.readByte();
+        int num = sis.readByte();
         for (int i = 0; i < num; i++) {
             playerList.add(new Player(
-                    dis.readByte(),
-                    Tools.readString(dis),
-                    Integer.reverseBytes(dis.readInt()),
-                    Float.intBitsToFloat(Integer.reverseBytes(dis.readInt()))));
+                    sis.readByte(),
+                    sis.readString(),
+                    Integer.reverseBytes(sis.readInt()),
+                    Float.intBitsToFloat(Integer.reverseBytes(sis.readInt()))));
         }
 
     }
