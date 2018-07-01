@@ -32,4 +32,8 @@ public class SteamInputStream extends DataInputStream {
         return Float.intBitsToFloat(Integer.reverseBytes(readInt()));
     }
 
+    public int readSteamShort() throws IOException {
+        return Short.reverseBytes(readShort());
+    }
+
 }

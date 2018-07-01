@@ -11,6 +11,7 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class GameServer {
 
@@ -41,6 +42,7 @@ public class GameServer {
     private ArrayList<Player> playerList;
     private byte[] challenge;
     private boolean challengeRecieved;
+    private HashMap<String, String> rules;
 
     private boolean loaded = false;
 
@@ -48,6 +50,7 @@ public class GameServer {
         this.playerList = new ArrayList<Player>();
         this.challenge = new byte[4];
         this.challengeRecieved = false;
+        this.rules = new HashMap<>();
     }
 
     public GameServer(String ip, int port) {
@@ -55,10 +58,7 @@ public class GameServer {
     }
 
     public GameServer(InetSocketAddress host) {
-        this.host = host;
-        this.playerList = new ArrayList<Player>();
-        this.challenge = new byte[4];
-        this.challengeRecieved = false;
+        this();
 
         try {
             socket = new DatagramSocket();
@@ -71,6 +71,7 @@ public class GameServer {
         try {
             requestInfo();
             requestChallenge();
+            requestPlayers();
             requestPlayers();
         } catch (IOException e) {
 
@@ -97,7 +98,7 @@ public class GameServer {
         this.map = sis.readString();
         this.folder = sis.readString();
         this.game = sis.readString();
-        this.appid = sis.readUnsignedShort();
+        this.appid = sis.readSteamShort();
         this.players = sis.read();
         this.maxPlayers = sis.read();
         this.bots = sis.read();
@@ -109,13 +110,13 @@ public class GameServer {
         this.EDF = sis.readByte();
 
         if ((EDF & 0x80) > 0) {
-            this.gamePort = Short.reverseBytes(sis.readShort());
+            this.gamePort = sis.readSteamShort();
         }
         if ((EDF & 0x10) > 0) {
             this.steamid = sis.readLong();
         }
         if ((EDF & 0x40) > 0) {
-            this.sourceTVPort = sis.readUnsignedShort();
+            this.sourceTVPort = sis.readSteamShort();
             this.sourceTVName = sis.readString();
         }
         if ((EDF & 0x20) > 0) {
@@ -156,7 +157,7 @@ public class GameServer {
         DatagramPacket packet = new DatagramPacket(req, req.length, host.getAddress(), host.getPort());
         socket.send(packet);
 
-        DatagramPacket recv = recieve(SourceQuery.PLAYERS_LIST);
+        DatagramPacket recv = recieve(SourceQuery.PLAYERS_RESPONSE);
         if (recv != null) {
             parsePlayers(recv);
         }
@@ -177,6 +178,28 @@ public class GameServer {
 
     }
 
+    public void requestRules() throws IOException {
+        byte[] req = SourceQuery.A2S_RULES(challenge);
+        DatagramPacket packet = new DatagramPacket(req, req.length, host.getAddress(), host.getPort());
+        socket.send(packet);
+
+        DatagramPacket recv = recieve(SourceQuery.RULES_RESPONSE);
+        if (recv != null) {
+            parseRules(recv);
+        }
+    }
+
+    public void parseRules(DatagramPacket packet) throws IOException {
+        SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(packet.getData()));
+        sis.skipBytes(5);
+
+        int num = sis.readSteamShort();
+        for (int i = 0; i < num; i++) {
+            rules.put(sis.readString(), sis.readString());
+        }
+
+    }
+
     public DatagramPacket recieve(byte expected) {
         byte[] buf = new byte[4096];
         DatagramPacket recv = new DatagramPacket(buf, buf.length);
@@ -188,7 +211,7 @@ public class GameServer {
         }
 
         if (recv.getLength() > 0 && recv.getData()[4] != expected) {
-            System.out.println("ERROR: wrong packet received, expected " + Tools.byteToHex(expected));
+            System.out.println("ERROR: wrong packet received, expected 0x" + Tools.byteToHex(expected));
             return null;
         }
 
@@ -197,6 +220,10 @@ public class GameServer {
 
     public ArrayList<Player> getPlayerList() {
         return playerList;
+    }
+
+    public HashMap<String, String> getRules() {
+        return rules;
     }
 
     public InetSocketAddress getHost() {
