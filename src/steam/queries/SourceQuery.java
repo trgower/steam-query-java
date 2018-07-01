@@ -11,6 +11,7 @@ public class SourceQuery {
     public static byte RULES_CODE = 0x56;
     public static byte CHALLENGE_RESPONSE = 0x41;
     public static byte INFO_RESPONSE = 0x49;
+    public static byte PLAYERS_LIST = 0x44;
 
     
     public static byte[] A2S_INFO() throws IOException {
@@ -27,11 +28,11 @@ public class SourceQuery {
         return baos.toByteArray();
     }
 
-    public static byte[] A2S_PLAYER() throws IOException {
+    public static byte[] A2S_PLAYER(byte[] challenge) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         baos.write(HEADER);
         baos.write(PLAYERS_CODE);
-        baos.write(HEADER);
+        baos.write(challenge);
 
         return baos.toByteArray();
     }

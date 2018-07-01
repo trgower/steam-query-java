@@ -4,14 +4,18 @@ public class Player {
 
     private byte index;
     private String name;
-    private Long score;
+    private int score;
     private float duration;
 
-    public Player(byte index, String name, Long score, float duration) {
+    public Player(byte index, String name, int score, float duration) {
         this.index = index;
         this.name = name;
         this.score = score;
         this.duration = duration;
+
+        if (this.name.length() == 0) {
+            this.name = "Unknown";
+        }
     }
 
     public byte getIndex() {
@@ -22,7 +26,7 @@ public class Player {
         return name;
     }
 
-    public Long getScore() {
+    public int getScore() {
         return score;
     }
 

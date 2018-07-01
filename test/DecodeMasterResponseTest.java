@@ -1,5 +1,5 @@
 import org.junit.jupiter.api.Test;
-import steam.*;
+import steam.MasterServers;
 import steam.servers.MasterServer;
 
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class DecodeTest {
+public class DecodeMasterResponseTest {
 
     @Test
     public void decodeTest() throws IOException {
