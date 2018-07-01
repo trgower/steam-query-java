@@ -171,8 +171,8 @@ public class GameServer {
             playerList.add(new Player(
                     sis.readByte(),
                     sis.readString(),
-                    Integer.reverseBytes(sis.readInt()),
-                    Float.intBitsToFloat(Integer.reverseBytes(sis.readInt()))));
+                    sis.readSteamLong(),
+                    sis.readSteamFloat()));
         }
 
     }
