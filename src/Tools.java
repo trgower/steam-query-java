@@ -1,5 +1,3 @@
-package steam;
-
 public class Tools {
 
     private final static char[] hexArray = "0123456789ABCDEF".toCharArray();

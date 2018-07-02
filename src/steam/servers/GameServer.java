@@ -1,7 +1,7 @@
 package steam.servers;
 
 import steam.SteamInputStream;
-import steam.Tools;
+import Tools;
 import steam.queries.Requests;
 
 import java.io.ByteArrayInputStream;
