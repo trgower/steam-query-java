@@ -1,9 +1,8 @@
-package steam.servers;
+package steam;
 
-import steam.SteamInputStream;
-import steam.SteamResponse;
 import steam.queries.Region;
 import steam.queries.Requests;
+import tools.SteamInputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -83,11 +82,10 @@ public class MasterServer {
 
         SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(recv.getData()));
 
-        int headerWidth = SteamResponse.MASTER_SERVER_LIST.length;
-        sis.skipBytes(headerWidth); // TODO: check if the first 6 bytes contain the correct code
+        sis.skipBytes(6);
 
         int len = recv.getLength();
-        for (int i = headerWidth; i < len; i += 6) { // each ip + port pair is 6 bytes long
+        for (int i = 6; i < len; i += 6) { // each ip + port pair is 6 bytes long
             list.add(new InetSocketAddress(InetAddress.getByAddress(
                     new byte[] {sis.readByte(), sis.readByte(), sis.readByte(), sis.readByte()}),
                     sis.readUnsignedShort()));

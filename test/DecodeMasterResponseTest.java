@@ -1,5 +1,5 @@
 import org.junit.jupiter.api.Test;
-import steam.servers.MasterServer;
+import steam.MasterServer;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

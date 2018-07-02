@@ -11,6 +11,7 @@ public class Requests {
     public static final byte PLAYERS_CODE = 0x55;
     public static final byte RULES_CODE = 0x56;
     public static final byte MASTER_CODE = 0x31;
+    public static final byte MASTER_RESPONSE = 0x66;
     public static final byte CHALLENGE_RESPONSE = 0x41;
     public static final byte INFO_RESPONSE = 0x49;
     public static final byte PLAYERS_RESPONSE = 0x44;

@@ -1,6 +1,6 @@
 import org.junit.jupiter.api.Test;
 import steam.queries.Requests;
-import steam.servers.GameServer;
+import steam.GameServer;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

@@ -1,4 +1,4 @@
-package steam.servers;
+package steam;
 
 public class Player {
 

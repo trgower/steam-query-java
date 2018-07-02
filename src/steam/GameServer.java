@@ -1,8 +1,8 @@
-package steam.servers;
+package steam;
 
-import steam.SteamInputStream;
-import Tools;
 import steam.queries.Requests;
+import tools.SteamInputStream;
+import tools.Tools;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

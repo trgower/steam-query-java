@@ -1,4 +1,4 @@
-package steam;
+package tools;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;

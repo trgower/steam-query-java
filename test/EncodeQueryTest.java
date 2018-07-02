@@ -2,7 +2,7 @@ import org.junit.jupiter.api.Test;
 import steam.queries.QueryFilterBuilder;
 import steam.queries.Region;
 import steam.queries.Requests;
-import steam.servers.MasterServer;
+import steam.MasterServer;
 
 import java.net.InetSocketAddress;
 
