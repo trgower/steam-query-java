@@ -1,5 +1,4 @@
 import org.junit.jupiter.api.Test;
-import steam.MasterServers;
 import steam.servers.MasterServer;
 
 import java.io.IOException;
@@ -17,7 +16,7 @@ public class DecodeMasterResponseTest {
 
         DatagramPacket packet = new DatagramPacket(response, response.length);
 
-        MasterServer ms = new MasterServer(MasterServers.SOURCE);
+        MasterServer ms = new MasterServer();
 
         ArrayList<InetSocketAddress> res = ms.parseResponse(packet);
 

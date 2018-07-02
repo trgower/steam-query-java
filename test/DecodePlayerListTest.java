@@ -1,5 +1,5 @@
 import org.junit.jupiter.api.Test;
-import steam.queries.SourceQuery;
+import steam.queries.Requests;
 import steam.servers.GameServer;
 
 import java.io.IOException;
@@ -12,7 +12,7 @@ public class DecodePlayerListTest {
     @Test
     public void decodeTest() throws IOException {
         GameServer gs = new GameServer();
-        byte[] response = {(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, SourceQuery.PLAYERS_RESPONSE, 0x01, 0x00, 0x61, 0x61, 0x61, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        byte[] response = {(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, Requests.PLAYERS_RESPONSE, 0x01, 0x00, 0x61, 0x61, 0x61, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
         DatagramPacket recv = new DatagramPacket(response, response.length);
 
         gs.parsePlayers(recv);

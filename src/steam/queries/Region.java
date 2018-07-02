@@ -1,6 +1,6 @@
-package steam;
+package steam.queries;
 
-public class RegionCode {
+public class Region {
 
     public static final byte NA_EAST = 0x00;
     public static final byte NA_WEST = 0x01;

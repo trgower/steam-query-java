@@ -1,12 +1,11 @@
 package steam.servers;
 
-import steam.RegionCode;
+import steam.SteamInputStream;
 import steam.SteamResponse;
-import steam.queries.MasterQuery;
+import steam.queries.Region;
+import steam.queries.Requests;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -17,11 +16,10 @@ import java.util.HashSet;
 
 public class MasterServer {
 
-    private String server;
+    private final String server = "hl2master.steampowered.com";
     private DatagramSocket socket;
 
-    public MasterServer(String serverHost) {
-        this.server = serverHost;
+    public MasterServer() {
         try {
             this.socket = new DatagramSocket();
             this.socket.setSoTimeout(15000);
@@ -55,12 +53,8 @@ public class MasterServer {
         HashSet<InetSocketAddress> all = new HashSet<>();
 
         while (!finished) {
-
-            // Create query
-            MasterQuery query = new MasterQuery(RegionCode.EVERYWHERE, last, filter + "\0");
-
             // Send query to master server
-            byte[] sendBuf = encodeQuery(query);
+            byte[] sendBuf = Requests.MASTER(Region.EVERYWHERE, last, filter + "\0");
             DatagramPacket packet = new DatagramPacket(sendBuf, sendBuf.length, InetAddress.getByName(server), 27011);
             socket.send(packet);
 
@@ -84,38 +78,19 @@ public class MasterServer {
 
     }
 
-
-    public byte[] encodeQuery(MasterQuery query) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-        baos.write((byte) 0x31); // Tells the master server that this is a query (?) ...it's an opcode...
-        baos.write(query.getRegionCode());
-
-        String addr = query.getHost().getAddress().getHostAddress() + ":" + query.getHost().getPort() + "\0";
-        try {
-            baos.write(addr.getBytes());
-            baos.write(query.getFilter().getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-
-        return baos.toByteArray();
-    }
-
     public ArrayList<InetSocketAddress> parseResponse(DatagramPacket recv) throws IOException {
         ArrayList<InetSocketAddress> list = new ArrayList<>();
 
-        DataInputStream dis = new DataInputStream(new ByteArrayInputStream(recv.getData()));
+        SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(recv.getData()));
 
         int headerWidth = SteamResponse.MASTER_SERVER_LIST.length;
-        dis.skipBytes(headerWidth); // TODO: check if the first 6 bytes contain the correct code
+        sis.skipBytes(headerWidth); // TODO: check if the first 6 bytes contain the correct code
 
         int len = recv.getLength();
         for (int i = headerWidth; i < len; i += 6) { // each ip + port pair is 6 bytes long
             list.add(new InetSocketAddress(InetAddress.getByAddress(
-                    new byte[] {dis.readByte(), dis.readByte(), dis.readByte(), dis.readByte()}),
-                    dis.readUnsignedShort()));
+                    new byte[] {sis.readByte(), sis.readByte(), sis.readByte(), sis.readByte()}),
+                    sis.readUnsignedShort()));
         }
 
         return list;

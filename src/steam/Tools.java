@@ -1,8 +1,5 @@
 package steam;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-
 public class Tools {
 
     private final static char[] hexArray = "0123456789ABCDEF".toCharArray();

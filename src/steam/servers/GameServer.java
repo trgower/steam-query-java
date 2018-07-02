@@ -2,7 +2,7 @@ package steam.servers;
 
 import steam.SteamInputStream;
 import steam.Tools;
-import steam.queries.SourceQuery;
+import steam.queries.Requests;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -64,7 +64,7 @@ public class GameServer {
 
     public GameServer(InetSocketAddress host) {
         this();
-
+        this.host = host;
         try {
             socket = new DatagramSocket();
             socket.setSoTimeout(3000);
@@ -77,18 +77,18 @@ public class GameServer {
             requestInfo();
             requestChallenge();
             requestPlayers();
-            requestPlayers();
+            requestRules();
         } catch (IOException e) {
 
         }
     }
 
     public void requestInfo() throws IOException {
-        byte[] q = SourceQuery.A2S_INFO();
+        byte[] q = Requests.INFO();
         DatagramPacket packet = new DatagramPacket(q, q.length, host.getAddress(), host.getPort());
         socket.send(packet);
 
-        DatagramPacket recv = recieve(SourceQuery.INFO_RESPONSE);
+        DatagramPacket recv = recieve(Requests.INFO_RESPONSE);
         if (recv != null) {
             parseInfo(recv);
             infoRecieved = true;
@@ -137,11 +137,11 @@ public class GameServer {
     public boolean requestChallenge() throws IOException {
         if (challengeRecieved) return true;
 
-        byte[] req = SourceQuery.A2S_PLAYER(SourceQuery.HEADER); // Send 0xFFFFFFFF as challenge number to request a challenge
+        byte[] req = Requests.PLAYERS(Requests.HEADER); // Send 0xFFFFFFFF as challenge number to request a challenge
         DatagramPacket packet = new DatagramPacket(req, req.length, host.getAddress(), host.getPort());
         socket.send(packet);
 
-        DatagramPacket recv = recieve(SourceQuery.CHALLENGE_RESPONSE);
+        DatagramPacket recv = recieve(Requests.CHALLENGE_RESPONSE);
         if (recv != null) {
             SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(recv.getData()));
             sis.skipBytes(5);
@@ -157,11 +157,11 @@ public class GameServer {
     }
 
     public void requestPlayers() throws IOException {
-        byte[] req = SourceQuery.A2S_PLAYER(challenge);
+        byte[] req = Requests.PLAYERS(challenge);
         DatagramPacket packet = new DatagramPacket(req, req.length, host.getAddress(), host.getPort());
         socket.send(packet);
 
-        DatagramPacket recv = recieve(SourceQuery.PLAYERS_RESPONSE);
+        DatagramPacket recv = recieve(Requests.PLAYERS_RESPONSE);
         if (recv != null) {
             parsePlayers(recv);
             playersRecieved = true;
@@ -184,11 +184,11 @@ public class GameServer {
     }
 
     public void requestRules() throws IOException {
-        byte[] req = SourceQuery.A2S_RULES(challenge);
+        byte[] req = Requests.RULES(challenge);
         DatagramPacket packet = new DatagramPacket(req, req.length, host.getAddress(), host.getPort());
         socket.send(packet);
 
-        DatagramPacket recv = recieve(SourceQuery.RULES_RESPONSE);
+        DatagramPacket recv = recieve(Requests.RULES_RESPONSE);
         if (recv != null) {
             parseRules(recv);
             rulesRecieved = true;
