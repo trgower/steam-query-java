@@ -2,96 +2,68 @@ package steam;
 
 import steam.queries.Region;
 import steam.queries.Requests;
-import tools.SteamInputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 
-public class MasterServer {
+public class MasterServer extends SteamServer {
 
-    private final String server = "hl2master.steampowered.com";
-    private DatagramSocket socket;
+    private HashMap<InetSocketAddress, GameServer> gameServers;
+    private InetSocketAddress fin = new InetSocketAddress("0.0.0.0", 0);
 
     public MasterServer() {
-        try {
-            this.socket = new DatagramSocket();
-            this.socket.setSoTimeout(15000);
-            this.socket.setTrafficClass(0x04);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        super(new InetSocketAddress("hl2master.steampowered.com", 27011));
+        gameServers = new HashMap<>();
     }
 
     /**
-     * getAllServers
-     * @return HashSet of all servers listed on the steam master server.
-     * @throws IOException
-     */
-    public HashSet<InetSocketAddress> getAllServers() throws IOException {
-        return getServers("");
-    }
-
-    /**
-     * getServers
+     * requestServers
      * @param filter string that defines a filter for the query
-     * @return HashSet of all servers listed on the steam master server.
      * @throws IOException
      */
-    public HashSet<InetSocketAddress> getServers(String filter) throws IOException {
-
-        InetSocketAddress fin = new InetSocketAddress(InetAddress.getByAddress(new byte[] {0x00, 0x00, 0x00, 0x00}), 0x0000);
-        InetSocketAddress last = new InetSocketAddress(InetAddress.getByAddress(new byte[] {0x00, 0x00, 0x00, 0x00}), 0x0000);
+    public void requestServers(String filter) throws IOException {
         boolean finished = false;
-
-        HashSet<InetSocketAddress> all = new HashSet<>();
-
+        InetSocketAddress last = new InetSocketAddress("0.0.0.0", 0);
         while (!finished) {
             // Send query to master server
             byte[] sendBuf = Requests.MASTER(Region.EVERYWHERE, last, filter + "\0");
-            DatagramPacket packet = new DatagramPacket(sendBuf, sendBuf.length, InetAddress.getByName(server), 27011);
+            DatagramPacket packet = new DatagramPacket(sendBuf, sendBuf.length, host);
             socket.send(packet);
 
-            // Recieve response
-            byte[] recvBuf = new byte[4096]; // magic buffer size
-            DatagramPacket recv = new DatagramPacket(recvBuf, recvBuf.length);
-            socket.receive(recv); // BLOCKS: will timeout after 15 seconds
-
-            ArrayList<InetSocketAddress> parsed = parseResponse(recv);
-            last = parsed.get(parsed.size() - 1);
-
-            if (last.equals(fin)) {
-                finished = true;
-                parsed.remove(last);
+            DatagramPacket recv = recieve(Requests.MASTER_RESPONSE);
+            if (recv != null) {
+                last = parseResponse(recv);
+                if (last.equals(fin)) {
+                    finished = true;
+                }
             }
-
-            all.addAll(parsed);
         }
-
-        return all;
-
     }
 
-    public ArrayList<InetSocketAddress> parseResponse(DatagramPacket recv) throws IOException {
-        ArrayList<InetSocketAddress> list = new ArrayList<>();
-
+    public InetSocketAddress parseResponse(DatagramPacket recv) throws IOException {
+        InetSocketAddress last = new InetSocketAddress("0.0.0.0", 0);
         SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(recv.getData()));
-
         sis.skipBytes(6);
 
         int len = recv.getLength();
         for (int i = 6; i < len; i += 6) { // each ip + port pair is 6 bytes long
-            list.add(new InetSocketAddress(InetAddress.getByAddress(
-                    new byte[] {sis.readByte(), sis.readByte(), sis.readByte(), sis.readByte()}),
-                    sis.readUnsignedShort()));
+            InetSocketAddress addr = new InetSocketAddress(InetAddress.getByAddress(new byte[] {sis.readByte(), sis.readByte(), sis.readByte(), sis.readByte()}), sis.readUnsignedShort());
+            if (addr.getPort() != 0) gameServers.put(addr, new GameServer(addr, false));
+            last = addr;
         }
 
-        return list;
+        return last;
     }
 
+    public GameServer getServer(String ip, int port) {
+        return gameServers.get(new InetSocketAddress(ip, port));
+    }
+
+    public HashMap<InetSocketAddress, GameServer> getGameServers() {
+        return gameServers;
+    }
 }

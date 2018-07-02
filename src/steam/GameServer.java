@@ -1,21 +1,16 @@
 package steam;
 
 import steam.queries.Requests;
-import tools.SteamInputStream;
-import tools.Tools;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class GameServer {
+public class GameServer extends SteamServer {
 
-    private InetSocketAddress host;
     private byte protocol;
     private String name;
     private String map;
@@ -38,7 +33,6 @@ public class GameServer {
     private String descTags;
     private Long gameid;
 
-    private DatagramSocket socket;
     private ArrayList<Player> playerList;
     private byte[] challenge;
     private HashMap<String, String> rules;
@@ -49,6 +43,29 @@ public class GameServer {
     private boolean challengeRecieved;
 
     public GameServer() {
+        init();
+    }
+
+    public GameServer(String ip, int port) {
+        this(new InetSocketAddress(ip, port), true);
+    }
+
+    public GameServer(InetSocketAddress host, boolean requestAll) {
+        super(host);
+        init();
+        if (requestAll) {
+            try {
+                requestInfo();
+                requestChallenge();
+                requestPlayers();
+                requestRules();
+            } catch (IOException e) {
+
+            }
+        }
+    }
+
+    public void init() {
         this.playerList = new ArrayList<Player>();
         this.challenge = new byte[4];
         this.challengeRecieved = false;
@@ -58,34 +75,9 @@ public class GameServer {
         this.rules = new HashMap<>();
     }
 
-    public GameServer(String ip, int port) {
-        this(new InetSocketAddress(ip, port));
-    }
-
-    public GameServer(InetSocketAddress host) {
-        this();
-        this.host = host;
-        try {
-            socket = new DatagramSocket();
-            socket.setSoTimeout(3000);
-            socket.setTrafficClass(0x04); // set transmission class to reliable. We don't care about speed
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            requestInfo();
-            requestChallenge();
-            requestPlayers();
-            requestRules();
-        } catch (IOException e) {
-
-        }
-    }
-
     public void requestInfo() throws IOException {
         byte[] q = Requests.INFO();
-        DatagramPacket packet = new DatagramPacket(q, q.length, host.getAddress(), host.getPort());
+        DatagramPacket packet = new DatagramPacket(q, q.length, host);
         socket.send(packet);
 
         DatagramPacket recv = recieve(Requests.INFO_RESPONSE);
@@ -138,7 +130,7 @@ public class GameServer {
         if (challengeRecieved) return true;
 
         byte[] req = Requests.PLAYERS(Requests.HEADER); // Send 0xFFFFFFFF as challenge number to request a challenge
-        DatagramPacket packet = new DatagramPacket(req, req.length, host.getAddress(), host.getPort());
+        DatagramPacket packet = new DatagramPacket(req, req.length, host);
         socket.send(packet);
 
         DatagramPacket recv = recieve(Requests.CHALLENGE_RESPONSE);
@@ -158,7 +150,7 @@ public class GameServer {
 
     public void requestPlayers() throws IOException {
         byte[] req = Requests.PLAYERS(challenge);
-        DatagramPacket packet = new DatagramPacket(req, req.length, host.getAddress(), host.getPort());
+        DatagramPacket packet = new DatagramPacket(req, req.length, host);
         socket.send(packet);
 
         DatagramPacket recv = recieve(Requests.PLAYERS_RESPONSE);
@@ -185,7 +177,7 @@ public class GameServer {
 
     public void requestRules() throws IOException {
         byte[] req = Requests.RULES(challenge);
-        DatagramPacket packet = new DatagramPacket(req, req.length, host.getAddress(), host.getPort());
+        DatagramPacket packet = new DatagramPacket(req, req.length, host);
         socket.send(packet);
 
         DatagramPacket recv = recieve(Requests.RULES_RESPONSE);
@@ -204,24 +196,6 @@ public class GameServer {
             rules.put(sis.readString(), sis.readString());
         }
 
-    }
-
-    public DatagramPacket recieve(byte expected) {
-        byte[] buf = new byte[4096];
-        DatagramPacket recv = new DatagramPacket(buf, buf.length);
-        try {
-            socket.receive(recv);
-        } catch (IOException e) {
-            System.out.println(host.getAddress().getHostAddress() + ":" + host.getPort() + " did not respond.");
-            return null;
-        }
-
-        if (recv.getLength() > 0 && recv.getData()[4] != expected) {
-            System.out.println("ERROR: wrong packet received, expected 0x" + Tools.byteToHex(expected));
-            return null;
-        }
-
-        return recv;
     }
 
     public ArrayList<Player> getPlayerList() {
