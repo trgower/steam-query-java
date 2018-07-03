@@ -56,10 +56,7 @@ public class GameServer extends SteamServer {
         init();
         if (requestAll) {   // We only request server data when explicitly asked because all of these methods block
             try {
-                requestInfo();
-                requestChallenge();
-                requestPlayers();
-                requestRules();
+                requestAll();
             } catch (IOException e) {
 
             }
@@ -74,6 +71,19 @@ public class GameServer extends SteamServer {
         this.playersRecieved = false;
         this.rulesRecieved = false;
         this.rules = new HashMap<>();
+    }
+
+    /**
+     * Requests all information for the server. It is recommended to only use this when initiating a GameServer object
+     * because you do not need to update the challenge number. If you want to update the information for real-time data,
+     * you should use requestInfo(), requestPlayers(), requestRules().
+     * @throws IOException
+     */
+    public void requestAll() throws IOException {
+        requestInfo();
+        requestChallenge();
+        requestPlayers();
+        requestRules();
     }
 
     /**

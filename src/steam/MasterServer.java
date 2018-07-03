@@ -9,6 +9,8 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class MasterServer extends SteamServer {
 
@@ -21,11 +23,13 @@ public class MasterServer extends SteamServer {
     }
 
     /**
-     * requestServers
+     * Request game servers based on the filter given. This does not request information for each game server. You need
+     * to do that with requestServerData().
      * @param filter string that defines a filter for the query
+     * @return the hash map of game servers in this MasterServer object. Can be retrieved using getGameServers()
      * @throws IOException
      */
-    public void requestServers(String filter) throws IOException {
+    public HashMap<InetSocketAddress, GameServer> requestServers(String filter) throws IOException {
         boolean finished = false;
         InetSocketAddress last = new InetSocketAddress("0.0.0.0", 0);
         while (!finished) {
@@ -45,6 +49,7 @@ public class MasterServer extends SteamServer {
                 }
             }
         }
+        return gameServers;
     }
 
     /**
@@ -65,6 +70,19 @@ public class MasterServer extends SteamServer {
         }
 
         return last;
+    }
+
+    /**
+     * Iterates through all servers and requests their information, players, and rules asynchronously. This method can
+     * take a very long time especially if every server doesn't respond. Each socket is set to a 3 second timeout.
+     * @throws IOException
+     */
+    public void requestServerData() throws IOException {
+        Iterator it = gameServers.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<InetSocketAddress, GameServer> pair = (Map.Entry) it.next();
+            pair.getValue().requestAll();
+        }
     }
 
     public GameServer getServer(String ip, int port) {
