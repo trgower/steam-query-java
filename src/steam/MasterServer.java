@@ -13,7 +13,7 @@ import java.util.HashMap;
 public class MasterServer extends SteamServer {
 
     private HashMap<InetSocketAddress, GameServer> gameServers;
-    private InetSocketAddress fin = new InetSocketAddress("0.0.0.0", 0);
+    private final InetSocketAddress fin = new InetSocketAddress("0.0.0.0", 0);
 
     public MasterServer() {
         super(new InetSocketAddress("hl2master.steampowered.com", 27011));
@@ -29,6 +29,9 @@ public class MasterServer extends SteamServer {
         boolean finished = false;
         InetSocketAddress last = new InetSocketAddress("0.0.0.0", 0);
         while (!finished) {
+            // We send queries until the last IP read is 0.0.0.0 and port it 0. That is the Master Server's way of
+            // telling us that the list is complete.
+
             // Send query to master server
             byte[] sendBuf = Requests.MASTER(Region.EVERYWHERE, last, filter + "\0");
             DatagramPacket packet = new DatagramPacket(sendBuf, sendBuf.length, host);
@@ -36,7 +39,7 @@ public class MasterServer extends SteamServer {
 
             DatagramPacket recv = recieve(Requests.MASTER_RESPONSE);
             if (recv != null) {
-                last = parseResponse(recv);
+                last = parseResponse(recv);     // Save the last IP read
                 if (last.equals(fin)) {
                     finished = true;
                 }
@@ -44,15 +47,20 @@ public class MasterServer extends SteamServer {
         }
     }
 
+    /**
+     * @param recv packet received that needs to be parsed
+     * @return the last InetSocketAddress read
+     * @throws IOException
+     */
     public InetSocketAddress parseResponse(DatagramPacket recv) throws IOException {
         InetSocketAddress last = new InetSocketAddress("0.0.0.0", 0);
         SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(recv.getData()));
-        sis.skipBytes(6);
+        sis.skipBytes(6); // The first 6 bytes are not a part of the server list
 
         int len = recv.getLength();
         for (int i = 6; i < len; i += 6) { // each ip + port pair is 6 bytes long
             InetSocketAddress addr = new InetSocketAddress(InetAddress.getByAddress(new byte[] {sis.readByte(), sis.readByte(), sis.readByte(), sis.readByte()}), sis.readUnsignedShort());
-            if (addr.getPort() != 0) gameServers.put(addr, new GameServer(addr, false));
+            if (addr.getPort() != 0) gameServers.putIfAbsent(addr, new GameServer(addr, false));
             last = addr;
         }
 

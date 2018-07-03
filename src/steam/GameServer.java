@@ -42,6 +42,7 @@ public class GameServer extends SteamServer {
     private boolean rulesRecieved;
     private boolean challengeRecieved;
 
+
     public GameServer() {
         init();
     }
@@ -53,7 +54,7 @@ public class GameServer extends SteamServer {
     public GameServer(InetSocketAddress host, boolean requestAll) {
         super(host);
         init();
-        if (requestAll) {
+        if (requestAll) {   // We only request server data when explicitly asked because all of these methods block
             try {
                 requestInfo();
                 requestChallenge();
@@ -75,6 +76,10 @@ public class GameServer extends SteamServer {
         this.rules = new HashMap<>();
     }
 
+    /**
+     * Sends information request to the game server and then parses the data if received
+     * @throws IOException
+     */
     public void requestInfo() throws IOException {
         byte[] q = Requests.INFO();
         DatagramPacket packet = new DatagramPacket(q, q.length, host);
@@ -87,6 +92,11 @@ public class GameServer extends SteamServer {
         }
     }
 
+    /**
+     * Parses server information received by the game server and stores it in this GameServer object.
+     * @param packet data received by the server
+     * @throws IOException
+     */
     public void parseInfo(DatagramPacket packet) throws IOException {
         SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(packet.getData()));
         sis.skipBytes(5);
@@ -126,6 +136,11 @@ public class GameServer extends SteamServer {
 
     }
 
+    /**
+     * Requests a challenge number from the game server. This is used to get player and rules data.
+     * @return true is challenge was received, false otherwise
+     * @throws IOException
+     */
     public boolean requestChallenge() throws IOException {
         if (challengeRecieved) return true;
 
@@ -148,6 +163,10 @@ public class GameServer extends SteamServer {
         return challengeRecieved;
     }
 
+    /**
+     * Sends a request to the game server for Player information
+     * @throws IOException
+     */
     public void requestPlayers() throws IOException {
         byte[] req = Requests.PLAYERS(challenge);
         DatagramPacket packet = new DatagramPacket(req, req.length, host);
@@ -160,6 +179,11 @@ public class GameServer extends SteamServer {
         }
     }
 
+    /**
+     * Parses player information received by the server
+     * @param packet Packet received by server
+     * @throws IOException
+     */
     public void parsePlayers(DatagramPacket packet) throws IOException {
         SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(packet.getData()));
         sis.skipBytes(5);
@@ -175,6 +199,10 @@ public class GameServer extends SteamServer {
 
     }
 
+    /**
+     * Sends a request to the server for Rules and will parse the response if received
+     * @throws IOException
+     */
     public void requestRules() throws IOException {
         byte[] req = Requests.RULES(challenge);
         DatagramPacket packet = new DatagramPacket(req, req.length, host);
@@ -187,6 +215,11 @@ public class GameServer extends SteamServer {
         }
     }
 
+    /**
+     * Parses rules data received by the server
+     * @param packet rules data
+     * @throws IOException
+     */
     public void parseRules(DatagramPacket packet) throws IOException {
         SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(packet.getData()));
         sis.skipBytes(5);

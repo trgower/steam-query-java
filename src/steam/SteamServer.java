@@ -28,6 +28,11 @@ public abstract class SteamServer {
         }
     }
 
+    /**
+     * Blocks execution until it receives a packet with a 3 second timeout
+     * @param expected the expected opcode
+     * @return Packet received by the server
+     */
     protected DatagramPacket recieve(byte expected) {
         byte[] buf = new byte[4096];
         DatagramPacket recv = new DatagramPacket(buf, buf.length);
