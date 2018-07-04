@@ -2,8 +2,8 @@
 This library was designed to be user-friendly, without bloat, and unnecessary dependencies. It was created for a website that displays real-time steam server data. It is a narrow and deep design but can also be wide and shallow depending on your use.
 
 This library is an implementation of this protocol:
-[Master Server Query Protocol](https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol)
-[Server Queries](https://developer.valvesoftware.com/wiki/Server_queries)
+- [Master Server Query Protocol](https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol)
+- [Server Queries](https://developer.valvesoftware.com/wiki/Server_queries)
 
 ## Usage
 #### Getting a list of DayZ servers
