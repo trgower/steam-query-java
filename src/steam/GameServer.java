@@ -34,6 +34,7 @@ public class GameServer extends SteamServer {
     private Long gameid;
 
     private byte[] challenge;
+    private boolean challengeValid;
     private ArrayList<Player> playerList;
     private HashMap<String, String> rules;
 
@@ -62,6 +63,7 @@ public class GameServer extends SteamServer {
         this.playerList = new ArrayList<Player>();
         this.challenge = new byte[4];
         this.rules = new HashMap<>();
+        this.challengeValid = false;
     }
 
     /**
@@ -151,10 +153,10 @@ public class GameServer extends SteamServer {
             this.challenge[2] = sis.readByte();
             this.challenge[3] = sis.readByte();
 
-            return true;
+            this.challengeValid = true;
         }
 
-        return false;
+        return challengeValid;
     }
 
     /**
@@ -162,6 +164,10 @@ public class GameServer extends SteamServer {
      * @throws IOException
      */
     public void requestPlayers() throws IOException {
+        if (!challengeValid) {
+            System.out.println("ERROR: You must request a challenge number first, call requestChallenge()");
+            return;
+        }
         send(Requests.PLAYERS(challenge));
 
         DatagramPacket recv = recieve(Requests.PLAYERS_RESPONSE);
@@ -195,6 +201,10 @@ public class GameServer extends SteamServer {
      * @throws IOException
      */
     public void requestRules() throws IOException {
+        if (!challengeValid) {
+            System.out.println("ERROR: You must request a challenge number first, call requestChallenge()");
+            return;
+        }
         send(Requests.RULES(challenge));
 
         DatagramPacket recv = recieve(Requests.RULES_RESPONSE);
