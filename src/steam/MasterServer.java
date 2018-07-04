@@ -86,6 +86,22 @@ public class MasterServer extends SteamServer {
         }
     }
 
+    /**
+     * Iterates through all servers and updates their information, players, and rules asynchronously. This method does
+     * not request a challenge number. This method can take a very long time especially if every server doesn't respond.
+     * Each socket is set to a 3 second timeout.
+     * @throws IOException
+     */
+    public void updateServerData() throws IOException {
+        Iterator it = gameServers.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<InetSocketAddress, GameServer> pair = (Map.Entry) it.next();
+            pair.getValue().requestInfo();
+            pair.getValue().requestPlayers();
+            pair.getValue().requestRules();
+        }
+    }
+
     public GameServer getServer(String ip, int port) {
         return gameServers.get(new InetSocketAddress(ip, port));
     }
