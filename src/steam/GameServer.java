@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 
 public class GameServer extends SteamServer {
@@ -83,9 +82,7 @@ public class GameServer extends SteamServer {
      * @throws IOException
      */
     public void requestInfo() throws IOException {
-        byte[] q = Requests.INFO();
-        DatagramPacket packet = new DatagramPacket(q, q.length, host);
-        socket.send(packet);
+        send(Requests.INFO());
 
         DatagramPacket recv = recieve(Requests.INFO_RESPONSE);
         if (recv != null) {
@@ -143,10 +140,7 @@ public class GameServer extends SteamServer {
      * @throws IOException
      */
     public boolean requestChallenge() throws IOException {
-
-        byte[] req = Requests.PLAYERS(Requests.HEADER); // Send 0xFFFFFFFF as challenge number to request a challenge
-        DatagramPacket packet = new DatagramPacket(req, req.length, host);
-        socket.send(packet);
+        send(Requests.PLAYERS(Requests.HEADER));
 
         DatagramPacket recv = recieve(Requests.CHALLENGE_RESPONSE);
         if (recv != null) {
@@ -168,9 +162,7 @@ public class GameServer extends SteamServer {
      * @throws IOException
      */
     public void requestPlayers() throws IOException {
-        byte[] req = Requests.PLAYERS(challenge);
-        DatagramPacket packet = new DatagramPacket(req, req.length, host);
-        socket.send(packet);
+        send(Requests.PLAYERS(challenge));
 
         DatagramPacket recv = recieve(Requests.PLAYERS_RESPONSE);
         if (recv != null) {
@@ -203,9 +195,7 @@ public class GameServer extends SteamServer {
      * @throws IOException
      */
     public void requestRules() throws IOException {
-        byte[] req = Requests.RULES(challenge);
-        DatagramPacket packet = new DatagramPacket(req, req.length, host);
-        socket.send(packet);
+        send(Requests.RULES(challenge));
 
         DatagramPacket recv = recieve(Requests.RULES_RESPONSE);
         if (recv != null) {
