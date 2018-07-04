@@ -53,8 +53,9 @@ public class MasterServer extends SteamServer {
     }
 
     /**
+     * Parses the list of game servers returned by the Master server.
      * @param recv packet received that needs to be parsed
-     * @return the last InetSocketAddress read
+     * @return the last InetSocketAddress read which is used to retrieve the next page of servers
      * @throws IOException
      */
     public InetSocketAddress parseResponse(DatagramPacket recv) throws IOException {

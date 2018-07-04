@@ -80,7 +80,8 @@ public class GameServer extends SteamServer {
     }
 
     /**
-     * Sends information request to the game server and then parses the data if received
+     * Sends an information request to the game server. This method blocks until a response is received or until
+     * the socket times out. If the packet is received it will parse the data and store it in this object.
      * @throws IOException
      */
     public void requestInfo() throws IOException {
@@ -137,7 +138,8 @@ public class GameServer extends SteamServer {
     }
 
     /**
-     * Requests a challenge number from the game server. This is used to get player and rules data.
+     * Requests a challenge number from the game server. This is a mandatory preliminary step before requesting the
+     * player list or the rules from the server.
      * @return true is challenge was received, false otherwise
      * @throws IOException
      */
@@ -160,7 +162,8 @@ public class GameServer extends SteamServer {
     }
 
     /**
-     * Sends a request to the game server for Player information
+     * Sends a request to the game server for a list of players in the server. This method blocks until a response is
+     * received or until the socket times out. If the packet is received it will parse the data and store it in this object.
      * @throws IOException
      */
     public void requestPlayers() throws IOException {
@@ -177,7 +180,8 @@ public class GameServer extends SteamServer {
     }
 
     /**
-     * Parses player information received by the server
+     * Parses player information received by the server and stores each player information in a Player object and
+     * stores those Player objects in a List.
      * @param packet Packet received by server
      * @throws IOException
      */
@@ -197,7 +201,8 @@ public class GameServer extends SteamServer {
     }
 
     /**
-     * Sends a request to the server for Rules and will parse the response if received
+     * Sends a request to the game server for a list of rules in the server. This method blocks until a response is
+     * received or until the socket times out. If the packet is received it will parse the data and store it in this object.
      * @throws IOException
      */
     public void requestRules() throws IOException {
@@ -214,7 +219,7 @@ public class GameServer extends SteamServer {
     }
 
     /**
-     * Parses rules data received by the server
+     * Parses rules information received by the server and stores each key/value pair in a HashMap.
      * @param packet rules data
      * @throws IOException
      */
