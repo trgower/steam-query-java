@@ -12,6 +12,10 @@ public abstract class SteamServer {
 
     protected InetSocketAddress host;
     protected DatagramSocket socket;
+    private long lastResponse;
+
+    private long responseLatency;
+    private long lastSent;
 
     public SteamServer() {
 
@@ -19,6 +23,9 @@ public abstract class SteamServer {
 
     public SteamServer(InetSocketAddress host) {
         this.host = host;
+        this.lastResponse = -1;
+        this.responseLatency = -1;
+        this.lastSent = -1;
         try {
             socket = new DatagramSocket();
             socket.setSoTimeout(3000);
@@ -48,7 +55,26 @@ public abstract class SteamServer {
             return null;
         }
 
+        lastResponse = System.currentTimeMillis();
+        responseLatency = lastResponse - lastSent;
         return recv;
     }
 
+    protected void send(byte[] data) throws IOException {
+        DatagramPacket packet = new DatagramPacket(data, data.length, host);
+        lastSent = System.currentTimeMillis();
+        socket.send(packet);
+    }
+
+    public long getLastResponse() {
+        return lastResponse;
+    }
+
+    public long getResponseLatency() {
+        return responseLatency;
+    }
+
+    public long getLastSent() {
+        return lastSent;
+    }
 }

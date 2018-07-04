@@ -102,6 +102,11 @@ public class QueryFilterBuilder {
         return this;
     }
 
+    public QueryFilterBuilder search(String v) {
+        this.filter += "\\name_match\\*" + v + "*";
+        return this;
+    }
+
     public QueryFilterBuilder versionMatches(String v) {
         this.filter += "\\version_match\\" + v;
         return this;

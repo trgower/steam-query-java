@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 public class GameServer extends SteamServer {
@@ -33,14 +34,9 @@ public class GameServer extends SteamServer {
     private String descTags;
     private Long gameid;
 
-    private ArrayList<Player> playerList;
     private byte[] challenge;
+    private ArrayList<Player> playerList;
     private HashMap<String, String> rules;
-
-    private boolean infoRecieved;
-    private boolean playersRecieved;
-    private boolean rulesRecieved;
-    private boolean challengeRecieved;
 
 
     public GameServer() {
@@ -66,10 +62,6 @@ public class GameServer extends SteamServer {
     public void init() {
         this.playerList = new ArrayList<Player>();
         this.challenge = new byte[4];
-        this.challengeRecieved = false;
-        this.infoRecieved = false;
-        this.playersRecieved = false;
-        this.rulesRecieved = false;
         this.rules = new HashMap<>();
     }
 
@@ -98,7 +90,6 @@ public class GameServer extends SteamServer {
         DatagramPacket recv = recieve(Requests.INFO_RESPONSE);
         if (recv != null) {
             parseInfo(recv);
-            infoRecieved = true;
         }
     }
 
@@ -152,7 +143,6 @@ public class GameServer extends SteamServer {
      * @throws IOException
      */
     public boolean requestChallenge() throws IOException {
-        if (challengeRecieved) return true;
 
         byte[] req = Requests.PLAYERS(Requests.HEADER); // Send 0xFFFFFFFF as challenge number to request a challenge
         DatagramPacket packet = new DatagramPacket(req, req.length, host);
@@ -167,10 +157,10 @@ public class GameServer extends SteamServer {
             this.challenge[2] = sis.readByte();
             this.challenge[3] = sis.readByte();
 
-            challengeRecieved = true;
+            return true;
         }
 
-        return challengeRecieved;
+        return false;
     }
 
     /**
@@ -185,7 +175,6 @@ public class GameServer extends SteamServer {
         DatagramPacket recv = recieve(Requests.PLAYERS_RESPONSE);
         if (recv != null) {
             parsePlayers(recv);
-            playersRecieved = true;
         }
     }
 
@@ -221,7 +210,6 @@ public class GameServer extends SteamServer {
         DatagramPacket recv = recieve(Requests.RULES_RESPONSE);
         if (recv != null) {
             parseRules(recv);
-            rulesRecieved = true;
         }
     }
 
@@ -341,19 +329,4 @@ public class GameServer extends SteamServer {
         return gameid;
     }
 
-    public boolean isInfoRecieved() {
-        return infoRecieved;
-    }
-
-    public boolean isPlayersRecieved() {
-        return playersRecieved;
-    }
-
-    public boolean isRulesRecieved() {
-        return rulesRecieved;
-    }
-
-    public boolean isChallengeRecieved() {
-        return challengeRecieved;
-    }
 }
