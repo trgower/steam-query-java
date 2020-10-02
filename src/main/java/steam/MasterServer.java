@@ -1,6 +1,6 @@
 package steam;
 
-import steam.queries.Region;
+import steam.queries.RegionConst;
 import steam.queries.Requests;
 
 import java.io.ByteArrayInputStream;
@@ -9,13 +9,14 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 public class MasterServer extends SteamServer {
 
-    private HashMap<InetSocketAddress, GameServer> gameServers;
-    private final InetSocketAddress fin = new InetSocketAddress("0.0.0.0", 0);
+    private static final String DEFAULT_HOSTNAME = "0.0.0.0";
+    private static final int DEFAULT_PORT = 0;
+    private final Map<InetSocketAddress, GameServer> gameServers;
+    private final InetSocketAddress fin = new InetSocketAddress(DEFAULT_HOSTNAME, DEFAULT_PORT);
 
     public MasterServer() {
         super(new InetSocketAddress("hl2master.steampowered.com", 27011));
@@ -29,21 +30,21 @@ public class MasterServer extends SteamServer {
      * @return the hash map of game servers in this MasterServer object. Can be retrieved using getGameServers()
      * @throws IOException
      */
-    public HashMap<InetSocketAddress, GameServer> requestServers(String filter) throws IOException {
+    public Map<InetSocketAddress, GameServer> requestServers(String filter) throws IOException {
         boolean finished = false;
-        InetSocketAddress last = new InetSocketAddress("0.0.0.0", 0);
+        InetSocketAddress last = new InetSocketAddress(DEFAULT_HOSTNAME, DEFAULT_PORT);
         while (!finished) {
             // We send queries until the last IP read is 0.0.0.0 and port it 0. That is the Master Server's way of
             // telling us that the list is complete.
 
             // Send query to master server
-            byte[] sendBuf = Requests.MASTER(Region.EVERYWHERE, last, filter + "\0");
+            byte[] sendBuf = Requests.masterRequest(RegionConst.EVERYWHERE, last, filter + "\0");
             DatagramPacket packet = new DatagramPacket(sendBuf, sendBuf.length, host);
             socket.send(packet);
 
-            DatagramPacket recv = recieve(Requests.MASTER_RESPONSE);
-            if (recv != null) {
-                last = parseResponse(recv);     // Save the last IP read
+            DatagramPacket receive = receive(Requests.MASTER_RESPONSE);
+            if (receive != null) {
+                last = parseResponse(receive); // Save the last IP read
                 if (last.equals(fin)) {
                     finished = true;
                 }
@@ -54,20 +55,20 @@ public class MasterServer extends SteamServer {
 
     /**
      * Parses the list of game servers returned by the Master server.
-     * @param recv packet received that needs to be parsed
+     * @param datagramPacket packet received that needs to be parsed
      * @return the last InetSocketAddress read which is used to retrieve the next page of servers
      * @throws IOException
      */
-    public InetSocketAddress parseResponse(DatagramPacket recv) throws IOException {
-        InetSocketAddress last = new InetSocketAddress("0.0.0.0", 0);
-        SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(recv.getData()));
+    public InetSocketAddress parseResponse(DatagramPacket datagramPacket) throws IOException {
+        InetSocketAddress last = new InetSocketAddress(DEFAULT_HOSTNAME, DEFAULT_PORT);
+        SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(datagramPacket.getData()));
         sis.skipBytes(6); // The first 6 bytes are not a part of the server list
 
-        int len = recv.getLength();
+        int len = datagramPacket.getLength();
         for (int i = 6; i < len; i += 6) { // each ip + port pair is 6 bytes long
-            InetSocketAddress addr = new InetSocketAddress(InetAddress.getByAddress(new byte[] {sis.readByte(), sis.readByte(), sis.readByte(), sis.readByte()}), sis.readUnsignedShort());
-            if (addr.getPort() != 0) gameServers.putIfAbsent(addr, new GameServer(addr, false));
-            last = addr;
+            InetSocketAddress address = new InetSocketAddress(InetAddress.getByAddress(new byte[] {sis.readByte(), sis.readByte(), sis.readByte(), sis.readByte()}), sis.readUnsignedShort());
+            if (address.getPort() != 0) gameServers.putIfAbsent(address, new GameServer(address, false));
+            last = address;
         }
 
         return last;
@@ -79,10 +80,8 @@ public class MasterServer extends SteamServer {
      * @throws IOException
      */
     public void requestServerData() throws IOException {
-        Iterator it = gameServers.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<InetSocketAddress, GameServer> pair = (Map.Entry) it.next();
-            pair.getValue().requestAll();
+        for (Map.Entry<InetSocketAddress, GameServer> inetSocketAddressGameServerEntry : gameServers.entrySet()) {
+            inetSocketAddressGameServerEntry.getValue().requestAll();
         }
     }
 
@@ -93,12 +92,8 @@ public class MasterServer extends SteamServer {
      * @throws IOException
      */
     public void updateServerData() throws IOException {
-        Iterator it = gameServers.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<InetSocketAddress, GameServer> pair = (Map.Entry) it.next();
-            pair.getValue().requestInfo();
-            pair.getValue().requestPlayers();
-            pair.getValue().requestRules();
+        for (Map.Entry<InetSocketAddress, GameServer> pair : gameServers.entrySet()) {
+            pair.getValue().updateServerData();
         }
     }
 
@@ -106,7 +101,7 @@ public class MasterServer extends SteamServer {
         return gameServers.get(new InetSocketAddress(ip, port));
     }
 
-    public HashMap<InetSocketAddress, GameServer> getGameServers() {
+    public Map<InetSocketAddress, GameServer> getGameServers() {
         return gameServers;
     }
 }

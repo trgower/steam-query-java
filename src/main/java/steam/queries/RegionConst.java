@@ -1,6 +1,8 @@
 package steam.queries;
 
-public class Region {
+public class RegionConst {
+
+    private RegionConst(){}
 
     public static final byte NA_EAST = 0x00;
     public static final byte NA_WEST = 0x01;

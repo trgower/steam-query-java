@@ -4,16 +4,18 @@ public class QueryFilterBuilder {
 
     private String filter = "";
 
-    public QueryFilterBuilder(){}
+    public QueryFilterBuilder(){
+        // empty constructor
+    }
 
 
     public QueryFilterBuilder nor() {
-        this.filter += "\\nor\\";
+        this.filter += "\\nor";
         return this;
     }
 
     public QueryFilterBuilder nand() {
-        this.filter += "\\nand\\";
+        this.filter += "\\nand";
         return this;
     }
 
@@ -27,13 +29,13 @@ public class QueryFilterBuilder {
         return this;
     }
 
-    public QueryFilterBuilder game(String v) {
-        this.filter += "\\gamedir\\" + v;
+    public QueryFilterBuilder game(String game) {
+        this.filter += "\\gamedir\\" + game;
         return this;
     }
 
-    public QueryFilterBuilder map(String v) {
-        this.filter += "\\map\\" + v;
+    public QueryFilterBuilder map(String map) {
+        this.filter += "\\map\\" + map;
         return this;
     }
 
@@ -62,13 +64,13 @@ public class QueryFilterBuilder {
         return this;
     }
 
-    public QueryFilterBuilder appid(int v) {
-        this.filter += "\\appid\\" + v;
+    public QueryFilterBuilder appId(int id) {
+        this.filter += "\\appid\\" + id;
         return this;
     }
 
-    public QueryFilterBuilder napp(int v) {
-        this.filter += "\\napp\\" + v;
+    public QueryFilterBuilder napp(int value) {
+        this.filter += "\\napp\\" + value;
         return this;
     }
 
@@ -82,33 +84,33 @@ public class QueryFilterBuilder {
         return this;
     }
 
-    public QueryFilterBuilder gametype(String v) {
-        this.filter += "\\gametype\\" + v;
+    public QueryFilterBuilder gameType(String type) {
+        this.filter += "\\gametype\\" + type;
         return this;
     }
 
-    public QueryFilterBuilder gamedata(String v) {
-        this.filter += "\\gamedata\\" + v;
+    public QueryFilterBuilder gameData(String data) {
+        this.filter += "\\gamedata\\" + data;
         return this;
     }
 
-    public QueryFilterBuilder gamedataor(String v) {
-        this.filter += "\\gamedataor\\" + v;
+    public QueryFilterBuilder gameDataOr(String data) {
+        this.filter += "\\gamedataor\\" + data;
         return this;
     }
 
-    public QueryFilterBuilder nameMatches(String v) {
-        this.filter += "\\name_match\\" + v;
+    public QueryFilterBuilder nameMatches(String name) {
+        this.filter += "\\name_match\\" + name;
         return this;
     }
 
-    public QueryFilterBuilder search(String v) {
-        this.filter += "\\name_match\\*" + v + "*";
+    public QueryFilterBuilder searchMatcherByNameExist(String name) {
+        this.filter += "\\name_match\\*" + name + "*";
         return this;
     }
 
-    public QueryFilterBuilder versionMatches(String v) {
-        this.filter += "\\version_match\\" + v;
+    public QueryFilterBuilder versionMatches(String version) {
+        this.filter += "\\version_match\\" + version;
         return this;
     }
 
@@ -126,6 +128,5 @@ public class QueryFilterBuilder {
     public String build() {
         return filter + "\0";
     }
-
 
 }

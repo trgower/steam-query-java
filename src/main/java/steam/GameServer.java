@@ -6,8 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 public class GameServer extends SteamServer {
 
@@ -16,7 +15,7 @@ public class GameServer extends SteamServer {
     private String map;
     private String folder;
     private String game;
-    private int appid;
+    private int appId;
     private int players;
     private int maxPlayers;
     private int bots;
@@ -25,13 +24,13 @@ public class GameServer extends SteamServer {
     private byte visibility;
     private byte vac;
     private String version;
-    private byte EDF;
+    private byte edf;
     private int gamePort;
-    private Long steamid;
+    private Long steamId;
     private int sourceTVPort;
     private String sourceTVName;
     private String descTags;
-    private Long gameid;
+    private Long gameId;
 
     private byte[] challenge;
     private boolean challengeValid;
@@ -47,20 +46,22 @@ public class GameServer extends SteamServer {
         this(new InetSocketAddress(ip, port), true);
     }
 
-    public GameServer(InetSocketAddress host, boolean requestAll) {
+    public GameServer(InetSocketAddress host, boolean isNeedToRequestAll) {
         super(host);
         init();
-        if (requestAll) {   // We only request server data when explicitly asked because all of these methods block
+        if (isNeedToRequestAll) {   // We only request server data when explicitly asked because all of these methods block
             try {
                 requestAll();
             } catch (IOException e) {
-
+                throw new RuntimeException(e);
             }
         }
     }
 
+
+
     public void init() {
-        this.playerList = new ArrayList<Player>();
+        this.playerList = new ArrayList<>();
         this.challenge = new byte[4];
         this.rules = new HashMap<>();
         this.challengeValid = false;
@@ -73,8 +74,12 @@ public class GameServer extends SteamServer {
      * @throws IOException
      */
     public void requestAll() throws IOException {
-        requestInfo();
+        updateServerData();
         requestChallenge();
+    }
+
+    public void updateServerData() throws IOException{
+        requestInfo();
         requestPlayers();
         requestRules();
     }
@@ -84,12 +89,11 @@ public class GameServer extends SteamServer {
      * the socket times out. If the packet is received it will parse the data and store it in this object.
      * @throws IOException
      */
-    public void requestInfo() throws IOException {
-        send(Requests.INFO());
-
-        DatagramPacket recv = recieve(Requests.INFO_RESPONSE);
-        if (recv != null) {
-            parseInfo(recv);
+    private void requestInfo() throws IOException {
+        send(Requests.infoRequest());
+        DatagramPacket receive = receive(Requests.INFO_RESPONSE);
+        if (receive != null) {
+            parseInfo(receive);
         }
     }
 
@@ -99,40 +103,40 @@ public class GameServer extends SteamServer {
      * @throws IOException
      */
     public void parseInfo(DatagramPacket packet) throws IOException {
-        SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(packet.getData()));
-        sis.skipBytes(5);
+        SteamInputStream inputStream = new SteamInputStream(new ByteArrayInputStream(packet.getData()));
+        inputStream.skipBytes(5);
 
-        this.protocol = sis.readByte();
-        this.name = sis.readString();
-        this.map = sis.readString();
-        this.folder = sis.readString();
-        this.game = sis.readString();
-        this.appid = sis.readSteamShort();
-        this.players = sis.read();
-        this.maxPlayers = sis.read();
-        this.bots = sis.read();
-        this.type = (char) sis.read();
-        this.env = (char) sis.read();
-        this.visibility = sis.readByte();
-        this.vac = sis.readByte();
-        this.version = sis.readString();
-        this.EDF = sis.readByte();
+        this.protocol = inputStream.readByte();
+        this.name = inputStream.readString();
+        this.map = inputStream.readString();
+        this.folder = inputStream.readString();
+        this.game = inputStream.readString();
+        this.appId = inputStream.readSteamShort();
+        this.players = inputStream.read();
+        this.maxPlayers = inputStream.read();
+        this.bots = inputStream.read();
+        this.type = (char) inputStream.read();
+        this.env = (char) inputStream.read();
+        this.visibility = inputStream.readByte();
+        this.vac = inputStream.readByte();
+        this.version = inputStream.readString();
+        this.edf = inputStream.readByte();
 
-        if ((EDF & 0x80) > 0) {
-            this.gamePort = sis.readSteamShort();
+        if ((edf & 0x80) > 0) {
+            this.gamePort = inputStream.readSteamShort();
         }
-        if ((EDF & 0x10) > 0) {
-            this.steamid = sis.readLong();
+        if ((edf & 0x10) > 0) {
+            this.steamId = inputStream.readLong();
         }
-        if ((EDF & 0x40) > 0) {
-            this.sourceTVPort = sis.readSteamShort();
-            this.sourceTVName = sis.readString();
+        if ((edf & 0x40) > 0) {
+            this.sourceTVPort = inputStream.readSteamShort();
+            this.sourceTVName = inputStream.readString();
         }
-        if ((EDF & 0x20) > 0) {
-            this.descTags = sis.readString();
+        if ((edf & 0x20) > 0) {
+            this.descTags = inputStream.readString();
         }
-        if ((EDF & 0x01) > 0) {
-            this.gameid = sis.readLong();
+        if ((edf & 0x01) > 0) {
+            this.gameId = inputStream.readLong();
         }
 
     }
@@ -143,22 +147,19 @@ public class GameServer extends SteamServer {
      * @return true is challenge was received, false otherwise
      * @throws IOException
      */
-    public boolean requestChallenge() throws IOException {
-        send(Requests.PLAYERS(Requests.HEADER));
-
-        DatagramPacket recv = recieve(Requests.CHALLENGE_RESPONSE);
-        if (recv != null) {
-            SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(recv.getData()));
-            sis.skipBytes(5);
-            this.challenge[0] = sis.readByte();
-            this.challenge[1] = sis.readByte();
-            this.challenge[2] = sis.readByte();
-            this.challenge[3] = sis.readByte();
+    private void requestChallenge() throws IOException {
+        send(Requests.playersRequest(Requests.HEADER));
+        DatagramPacket receive = receive(Requests.CHALLENGE_RESPONSE);
+        if (receive != null) {
+            SteamInputStream inputStream = new SteamInputStream(new ByteArrayInputStream(receive.getData()));
+            inputStream.skipBytes(5);
+            this.challenge[0] = inputStream.readByte();
+            this.challenge[1] = inputStream.readByte();
+            this.challenge[2] = inputStream.readByte();
+            this.challenge[3] = inputStream.readByte();
 
             this.challengeValid = true;
         }
-
-        return challengeValid;
     }
 
     /**
@@ -166,16 +167,14 @@ public class GameServer extends SteamServer {
      * received or until the socket times out. If the packet is received it will parse the data and store it in this object.
      * @throws IOException
      */
-    public void requestPlayers() throws IOException {
+    private void requestPlayers() throws IOException {
         if (!challengeValid) {
-            System.out.println("ERROR: You must request a challenge number first, call requestChallenge()");
-            return;
+            return; // Call requestChallenge() first
         }
-        send(Requests.PLAYERS(challenge));
-
-        DatagramPacket recv = recieve(Requests.PLAYERS_RESPONSE);
-        if (recv != null) {
-            parsePlayers(recv);
+        send(Requests.playersRequest(challenge));
+        DatagramPacket receive = receive(Requests.PLAYERS_RESPONSE);
+        if (receive != null) {
+            parsePlayers(receive);
         }
     }
 
@@ -188,7 +187,6 @@ public class GameServer extends SteamServer {
     public void parsePlayers(DatagramPacket packet) throws IOException {
         SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(packet.getData()));
         sis.skipBytes(5);
-
         int num = sis.readByte();
         for (int i = 0; i < num; i++) {
             playerList.add(new Player(
@@ -205,16 +203,14 @@ public class GameServer extends SteamServer {
      * received or until the socket times out. If the packet is received it will parse the data and store it in this object.
      * @throws IOException
      */
-    public void requestRules() throws IOException {
+    private void requestRules() throws IOException {
         if (!challengeValid) {
-            System.out.println("ERROR: You must request a challenge number first, call requestChallenge()");
-            return;
+            return; // Call requestChallenge() first
         }
-        send(Requests.RULES(challenge));
-
-        DatagramPacket recv = recieve(Requests.RULES_RESPONSE);
-        if (recv != null) {
-            parseRules(recv);
+        send(Requests.rulesRequest(challenge));
+        DatagramPacket receive = receive(Requests.RULES_RESPONSE);
+        if (receive != null) {
+            parseRules(receive);
         }
     }
 
@@ -226,7 +222,6 @@ public class GameServer extends SteamServer {
     public void parseRules(DatagramPacket packet) throws IOException {
         SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(packet.getData()));
         sis.skipBytes(5);
-
         int num = sis.readSteamShort();
         for (int i = 0; i < num; i++) {
             rules.put(sis.readString(), sis.readString());
@@ -234,20 +229,16 @@ public class GameServer extends SteamServer {
 
     }
 
-    public ArrayList<Player> getPlayerList() {
+    public List<Player> getPlayerList() {
         return playerList;
     }
 
-    public HashMap<String, String> getRules() {
+    public Map<String, String> getRules() {
         return rules;
     }
 
     public InetSocketAddress getHost() {
         return host;
-    }
-
-    public void setHost(InetSocketAddress host) {
-        this.host = host;
     }
 
     public byte getProtocol() {
@@ -270,8 +261,8 @@ public class GameServer extends SteamServer {
         return game;
     }
 
-    public int getAppid() {
-        return appid;
+    public int getAppId() {
+        return appId;
     }
 
     public int getPlayers() {
@@ -306,16 +297,16 @@ public class GameServer extends SteamServer {
         return version;
     }
 
-    public byte getEDF() {
-        return EDF;
+    public byte getEdf() {
+        return edf;
     }
 
     public int getGamePort() {
         return gamePort;
     }
 
-    public Long getSteamid() {
-        return steamid;
+    public Long getSteamId() {
+        return steamId;
     }
 
     public int getSourceTVPort() {
@@ -330,8 +321,8 @@ public class GameServer extends SteamServer {
         return descTags;
     }
 
-    public Long getGameid() {
-        return gameid;
+    public Long getGameId() {
+        return gameId;
     }
 
 }

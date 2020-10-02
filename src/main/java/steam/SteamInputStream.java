@@ -1,6 +1,5 @@
 package steam;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,18 +9,14 @@ public class SteamInputStream extends DataInputStream {
         super(inputStream);
     }
 
-    public SteamInputStream(ByteArrayInputStream inputStream) {
-        super(inputStream);
-    }
-
     public String readString() throws IOException {
-        String res = "";
+        StringBuilder builder = new StringBuilder();
         byte b = readByte();
         while (b != 0x00) {
-            res += (char) b;
+            builder.append((char) b);
             b = readByte();
         }
-        return res;
+        return builder.toString();
     }
 
     public int readSteamLong() throws IOException {

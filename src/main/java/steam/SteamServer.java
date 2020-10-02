@@ -1,6 +1,6 @@
 package steam;
 
-import tools.Tools;
+import steam.tools.Tools;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -13,7 +13,6 @@ public abstract class SteamServer {
     protected InetSocketAddress host;
     protected DatagramSocket socket;
     private long lastResponse;
-
     private long responseLatency;
     private long lastSent;
 
@@ -40,24 +39,24 @@ public abstract class SteamServer {
      * @param expected the expected opcode
      * @return Packet received by the server
      */
-    protected DatagramPacket recieve(byte expected) {
+    protected DatagramPacket receive(byte expected) {
         byte[] buf = new byte[4096];
-        DatagramPacket recv = new DatagramPacket(buf, buf.length);
+        DatagramPacket receive = new DatagramPacket(buf, buf.length);
         try {
-            socket.receive(recv);
+            socket.receive(receive);
         } catch (IOException e) {
             System.out.println(host.getAddress().getHostAddress() + ":" + host.getPort() + " did not respond.");
             return null;
         }
 
-        if (recv.getLength() > 0 && recv.getData()[4] != expected) {
+        if (receive.getLength() > 0 && receive.getData()[4] != expected) {
             System.out.println("ERROR: wrong packet received, expected 0x" + Tools.byteToHex(expected));
             return null;
         }
 
         lastResponse = System.currentTimeMillis();
         responseLatency = lastResponse - lastSent;
-        return recv;
+        return receive;
     }
 
     protected void send(byte[] data) throws IOException {
