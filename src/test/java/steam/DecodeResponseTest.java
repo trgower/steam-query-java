@@ -29,16 +29,16 @@ class DecodeResponseTest {
         assertEquals("aaa", gs.getMap());
         assertEquals("aaa", gs.getFolder());
         assertEquals("aaa", gs.getGame());
-        assertEquals(0, gs.getAppId());
+        assertEquals(0, gs.getSteamApplicationId());
         assertEquals(1, gs.getPlayers());
         assertEquals(10, gs.getMaxPlayers());
         assertEquals(2, gs.getBots());
-        assertEquals('d', gs.getType());
-        assertEquals('w', gs.getEnv());
+        assertEquals('d', gs.getServerType());
+        assertEquals('w', gs.getEnvironment());
         assertEquals(0, gs.getVisibility());
         assertEquals(1, gs.getVac());
         assertEquals("aa", gs.getVersion());
-        assertEquals(0, gs.getEdf());
+        assertEquals(0, gs.getExtraDataFlag());
     }
 
     @Test

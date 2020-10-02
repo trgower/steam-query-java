@@ -15,16 +15,16 @@ public class GameServer extends SteamServer {
     private String map;
     private String folder;
     private String game;
-    private int appId;
+    private int steamApplicationId;
     private int players;
     private int maxPlayers;
     private int bots;
-    private char type;
-    private char env;
+    private char serverType;
+    private char environment;
     private byte visibility;
     private byte vac;
     private String version;
-    private byte edf;
+    private byte extraDataFlag;
     private int gamePort;
     private Long steamId;
     private int sourceTVPort;
@@ -111,31 +111,31 @@ public class GameServer extends SteamServer {
         this.map = inputStream.readString();
         this.folder = inputStream.readString();
         this.game = inputStream.readString();
-        this.appId = inputStream.readSteamShort();
+        this.steamApplicationId = inputStream.readSteamShort();
         this.players = inputStream.read();
         this.maxPlayers = inputStream.read();
         this.bots = inputStream.read();
-        this.type = (char) inputStream.read();
-        this.env = (char) inputStream.read();
+        this.serverType = (char) inputStream.read();
+        this.environment = (char) inputStream.read();
         this.visibility = inputStream.readByte();
         this.vac = inputStream.readByte();
         this.version = inputStream.readString();
-        this.edf = inputStream.readByte();
+        this.extraDataFlag = inputStream.readByte();
 
-        if ((edf & 0x80) > 0) {
+        if ((extraDataFlag & 0x80) > 0) {
             this.gamePort = inputStream.readSteamShort();
         }
-        if ((edf & 0x10) > 0) {
+        if ((extraDataFlag & 0x10) > 0) {
             this.steamId = inputStream.readLong();
         }
-        if ((edf & 0x40) > 0) {
+        if ((extraDataFlag & 0x40) > 0) {
             this.sourceTVPort = inputStream.readSteamShort();
             this.sourceTVName = inputStream.readString();
         }
-        if ((edf & 0x20) > 0) {
+        if ((extraDataFlag & 0x20) > 0) {
             this.descTags = inputStream.readString();
         }
-        if ((edf & 0x01) > 0) {
+        if ((extraDataFlag & 0x01) > 0) {
             this.gameId = inputStream.readLong();
         }
 
@@ -261,8 +261,8 @@ public class GameServer extends SteamServer {
         return game;
     }
 
-    public int getAppId() {
-        return appId;
+    public int getSteamApplicationId() {
+        return steamApplicationId;
     }
 
     public int getPlayers() {
@@ -277,12 +277,12 @@ public class GameServer extends SteamServer {
         return bots;
     }
 
-    public char getType() {
-        return type;
+    public char getServerType() {
+        return serverType;
     }
 
-    public char getEnv() {
-        return env;
+    public char getEnvironment() {
+        return environment;
     }
 
     public byte getVisibility() {
@@ -297,8 +297,8 @@ public class GameServer extends SteamServer {
         return version;
     }
 
-    public byte getEdf() {
-        return edf;
+    public byte getExtraDataFlag() {
+        return extraDataFlag;
     }
 
     public int getGamePort() {
