@@ -1,4 +1,4 @@
-package steam.queries;
+package com.github.boubari97.serversquery.queries;
 
 public class RegionConst {
 

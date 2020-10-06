@@ -1,6 +1,6 @@
-package steam;
+package com.github.boubari97.serversquery;
 
-import steam.queries.Requests;
+import com.github.boubari97.serversquery.queries.Requests;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -87,7 +87,7 @@ public class GameServer extends SteamServer {
     /**
      * Sends an information request to the game server. This method blocks until a response is received or until
      * the socket times out. If the packet is received it will parse the data and store it in this object.
-     * @throws IOException
+     * @throws IOException by ByteArrayOutputStream and SteamInputStream
      */
     private void requestInfo() throws IOException {
         send(Requests.infoRequest());
@@ -100,7 +100,7 @@ public class GameServer extends SteamServer {
     /**
      * Parses server information received by the game server and stores it in this GameServer object.
      * @param packet data received by the server
-     * @throws IOException
+     * @throws IOException by SteamInputStream
      */
     public void parseInfo(DatagramPacket packet) throws IOException {
         SteamInputStream inputStream = new SteamInputStream(new ByteArrayInputStream(packet.getData()));

@@ -1,4 +1,4 @@
-package steam.tools;
+package com.github.boubari97.serversquery.tools;
 
 public class Tools {
 

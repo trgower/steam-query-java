@@ -1,7 +1,7 @@
-package steam;
+package com.github.boubari97.serversquery;
 
 import org.junit.jupiter.api.Test;
-import steam.queries.QueryFilterBuilder;
+import com.github.boubari97.serversquery.queries.QueryFilterBuilder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

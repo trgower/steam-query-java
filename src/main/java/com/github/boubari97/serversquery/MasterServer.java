@@ -1,7 +1,7 @@
-package steam;
+package com.github.boubari97.serversquery;
 
-import steam.queries.RegionConst;
-import steam.queries.Requests;
+import com.github.boubari97.serversquery.queries.RegionConst;
+import com.github.boubari97.serversquery.queries.Requests;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -28,7 +28,7 @@ public class MasterServer extends SteamServer {
      * to do that with requestServerData().
      * @param filter string that defines a filter for the query
      * @return the hash map of game servers in this MasterServer object. Can be retrieved using getGameServers()
-     * @throws IOException
+     * @throws IOException throws in socket.send(packet) by DatagramSocket class
      */
     public Map<InetSocketAddress, GameServer> requestServers(String filter) throws IOException {
         boolean finished = false;
@@ -57,16 +57,16 @@ public class MasterServer extends SteamServer {
      * Parses the list of game servers returned by the Master server.
      * @param datagramPacket packet received that needs to be parsed
      * @return the last InetSocketAddress read which is used to retrieve the next page of servers
-     * @throws IOException
+     * @throws IOException in skipBytes() by SteamInputStream class
      */
     public InetSocketAddress parseResponse(DatagramPacket datagramPacket) throws IOException {
         InetSocketAddress last = new InetSocketAddress(DEFAULT_HOSTNAME, DEFAULT_PORT);
-        SteamInputStream sis = new SteamInputStream(new ByteArrayInputStream(datagramPacket.getData()));
-        sis.skipBytes(6); // The first 6 bytes are not a part of the server list
+        SteamInputStream inputStream = new SteamInputStream(new ByteArrayInputStream(datagramPacket.getData()));
+        inputStream.skipBytes(6); // The first 6 bytes are not a part of the server list
 
         int len = datagramPacket.getLength();
         for (int i = 6; i < len; i += 6) { // each ip + port pair is 6 bytes long
-            InetSocketAddress address = new InetSocketAddress(InetAddress.getByAddress(new byte[] {sis.readByte(), sis.readByte(), sis.readByte(), sis.readByte()}), sis.readUnsignedShort());
+            InetSocketAddress address = new InetSocketAddress(InetAddress.getByAddress(new byte[] {inputStream.readByte(), inputStream.readByte(), inputStream.readByte(), inputStream.readByte()}), inputStream.readUnsignedShort());
             if (address.getPort() != 0) gameServers.putIfAbsent(address, new GameServer(address, false));
             last = address;
         }
@@ -77,7 +77,7 @@ public class MasterServer extends SteamServer {
     /**
      * Iterates through all servers and requests their information, players, and rules asynchronously. This method can
      * take a very long time especially if every server doesn't respond. Each socket is set to a 3 second timeout.
-     * @throws IOException
+     * @throws IOException in requestAll()
      */
     public void requestServerData() throws IOException {
         for (Map.Entry<InetSocketAddress, GameServer> inetSocketAddressGameServerEntry : gameServers.entrySet()) {
@@ -89,7 +89,7 @@ public class MasterServer extends SteamServer {
      * Iterates through all servers and updates their information, players, and rules asynchronously. This method does
      * not request a challenge number. This method can take a very long time especially if every server doesn't respond.
      * Each socket is set to a 3 second timeout.
-     * @throws IOException
+     * @throws IOException in updateServerData()
      */
     public void updateServerData() throws IOException {
         for (Map.Entry<InetSocketAddress, GameServer> pair : gameServers.entrySet()) {

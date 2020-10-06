@@ -1,7 +1,7 @@
-package steam;
+package com.github.boubari97.serversquery;
 
 import org.junit.jupiter.api.Test;
-import steam.queries.Requests;
+import com.github.boubari97.serversquery.queries.Requests;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

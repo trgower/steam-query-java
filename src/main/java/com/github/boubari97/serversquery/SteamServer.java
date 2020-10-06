@@ -1,6 +1,6 @@
-package steam;
+package com.github.boubari97.serversquery;
 
-import steam.tools.Tools;
+import com.github.boubari97.serversquery.tools.Tools;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -45,13 +45,13 @@ public abstract class SteamServer {
         try {
             socket.receive(receive);
         } catch (IOException e) {
-            System.out.println(host.getAddress().getHostAddress() + ":" + host.getPort() + " did not respond.");
-            return null;
+            String message = host.getAddress().getHostAddress() + ":" + host.getPort() + " did not respond.\n";
+            throw new RuntimeException(message + e);
         }
 
         if (receive.getLength() > 0 && receive.getData()[4] != expected) {
-            System.out.println("ERROR: wrong packet received, expected 0x" + Tools.byteToHex(expected));
-            return null;
+            String message = "ERROR: wrong packet received, expected 0x" + Tools.byteToHex(expected);
+            throw new RuntimeException(message);
         }
 
         lastResponse = System.currentTimeMillis();

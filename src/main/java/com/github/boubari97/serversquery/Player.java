@@ -1,4 +1,4 @@
-package steam;
+package com.github.boubari97.serversquery;
 
 import java.util.Objects;
 
