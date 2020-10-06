@@ -5,6 +5,32 @@ This library is an implementation of this protocol:
 - [Master Server Query Protocol](https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol)
 - [Server Queries](https://developer.valvesoftware.com/wiki/Server_queries)
 
+# How to include in another projects
+#### pom.xml
+    
+    <dependencies>
+        ...
+        <dependency>
+            <groupId>com.github.boubari97</groupId>
+            <artifactId>steam-servers-query</artifactId>
+            <version>1.0</version>
+        </dependency>
+        ...
+    </dependencies>
+    ...
+    <repositories>
+        ...
+        <repository>
+            <id>steam-query-java-mvn-repo</id>
+            <url>https://raw.github.com/Boubari97/steam-query-java/mvn-repo/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+        ...
+    </repositories>
+
 ## Usage
 #### Getting a list of DayZ servers
 
