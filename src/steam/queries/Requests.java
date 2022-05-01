@@ -18,7 +18,7 @@ public class Requests {
     public static final byte RULES_RESPONSE = 0x45;
     public static final byte[] INFO_MSG = "Source Engine Query".getBytes();
 
-    public static byte[] INFO() throws IOException {
+    public static byte[] INFO(byte[] challenge) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         baos.write(HEADER);
         baos.write(INFO_CODE);
@@ -28,6 +28,7 @@ public class Requests {
             e.printStackTrace();
         }
         baos.write(0x00);
+        baos.write(challenge);
 
         return baos.toByteArray();
     }
