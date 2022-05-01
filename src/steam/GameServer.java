@@ -73,8 +73,8 @@ public class GameServer extends SteamServer {
      * @throws IOException
      */
     public void requestAll() throws IOException {
-        requestInfo();
         requestChallenge();
+        requestInfo();
         requestPlayers();
         requestRules();
     }
@@ -85,7 +85,7 @@ public class GameServer extends SteamServer {
      * @throws IOException
      */
     public void requestInfo() throws IOException {
-        send(Requests.INFO());
+        send(Requests.INFO(challenge));
 
         DatagramPacket recv = recieve(Requests.INFO_RESPONSE);
         if (recv != null) {
